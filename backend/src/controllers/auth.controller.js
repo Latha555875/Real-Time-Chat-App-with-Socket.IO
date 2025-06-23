@@ -1,6 +1,6 @@
 import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import cloudinary from "../lib/cloudinary.js";
 
 export const signup = async (req, res) => {
@@ -20,28 +20,30 @@ export const signup = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    console.log("SIGNUP INPUT:", { fullName, email, password });
 
-    const newUser = new User({
+
+    const newUser = await User.create({
       fullName,
       email,
       password: hashedPassword,
     });
 
-    if (newUser) {
-      // generate jwt token here
+    // if (newUser) {
+    //   // generate jwt token here
       generateToken(newUser._id, res);
-      await newUser.save();
+      // await newUser.save();
 
       res.status(201).json({
         _id: newUser._id,
         fullName: newUser.fullName,
         email: newUser.email,
         profilePic: newUser.profilePic,
-      });
-    } else {
-      res.status(400).json({ message: "Invalid user data" });
+  });
+    // } else {
+    //   res.status(400).json({ message: "Invalid user data" });
     }
-  } catch (error) {
+   catch (error) {
     console.log("Error in signup controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
